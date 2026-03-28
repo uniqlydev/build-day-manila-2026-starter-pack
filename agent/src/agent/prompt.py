@@ -10,23 +10,15 @@ This is where you define your agent's strategy:
 
 from __future__ import annotations
 
+from agent.nodes.observe_node import observe_frame
 from core import Frame
+from prompts.observe_prompt import OBSERVE_PROMPT
 
 # ---------------------------------------------------------------------------
 # System prompt — tweak this to improve your agent's guessing ability.
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """\
-You are playing a visual guessing game. You will receive a screenshot from a
-live camera feed. Your goal is to identify what is being shown as quickly and
-accurately as possible.
-
-Rules:
-- Give your best guess as a short, specific answer (1-5 words).
-- If you're not confident enough yet, respond with exactly "SKIP".
-- Be specific: "golden retriever" is better than "dog".
-- You only get to see one frame at a time, so make it count.
-"""
+SYSTEM_PROMPT = OBSERVE_PROMPT
 
 
 async def analyze(frame: Frame) -> str | None:
@@ -41,23 +33,8 @@ async def analyze(frame: Frame) -> str | None:
     Returns:
         A text guess string, or None to skip this frame.
     """
-    # -----------------------------------------------------------------
-    # TODO: Replace this with your actual vision LLM call.
-    #
-    # Example with pydantic-ai:
-    #
-    #   from pydantic_ai import Agent
-    #   agent = Agent("claude-sonnet-4-20250514", system_prompt=SYSTEM_PROMPT)
-    #   result = await agent.run(
-    #       "What do you see in this image?",
-    #       # attach the frame image here
-    #   )
-    #   answer = result.output.strip()
-    #   return None if answer == "SKIP" else answer
-    # -----------------------------------------------------------------
+    observations = await observe_frame(frame)
+    print(f"  [observe] {observations}")
 
-    print(f"  [agent] Got frame at {frame.timestamp.isoformat()} "
-          f"({frame.image.size[0]}x{frame.image.size[1]})")
-    print("  [agent] No LLM configured yet — edit agent/prompt.py!")
-
+    # Observation-only mode: do not submit a gameplay guess yet.
     return None

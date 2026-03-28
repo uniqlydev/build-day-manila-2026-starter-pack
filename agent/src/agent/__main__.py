@@ -46,14 +46,19 @@ def parse_args() -> argparse.Namespace:
         default=1,
         help="Frames per second to sample (default: 1)",
     )
+    parser.add_argument(
+        "--video-size",
+        type=str,
+        default=None,
+        help="Optional camera capture size, e.g. 1280x720",
+    )
     return parser.parse_args()
 
 
-async def run_practice(camera: int, fps: int) -> None:
+async def run_practice(camera: int, fps: int, video_size: str | None = None) -> None:
     """Run the agent in practice mode with a local camera."""
-    from core import start_practice
-
     from agent.prompt import analyze
+    from services.video import start_practice_frames
 
     print("=" * 50)
     print("  PRACTICE MODE")
@@ -61,7 +66,11 @@ async def run_practice(camera: int, fps: int) -> None:
     print("=" * 50)
     print()
 
-    async for frame in start_practice(camera_index=camera, fps=fps):
+    async for frame in start_practice_frames(
+        camera_index=camera,
+        fps=fps,
+        video_size=video_size,
+    ):
         guess = await analyze(frame)
         if guess:
             print(f"  [guess] {guess}")
@@ -171,7 +180,7 @@ async def main() -> None:
     args = parse_args()
 
     if args.practice:
-        await run_practice(camera=args.camera, fps=args.fps)
+        await run_practice(camera=args.camera, fps=args.fps, video_size=args.video_size)
     else:
         await run_live()
 
